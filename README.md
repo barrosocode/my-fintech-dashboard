@@ -1,0 +1,1 @@
+Bem-vindo ao My Fintech Dashboard, um projeto de um Dashboard React que tem como objetivo consumir a My Fintech API para visualizar e gerenciar gastos pessoais. Com ela, é possível registrar transações financeiras (entradas e saídas) de forma organizada, bem como manter o saldo atualizado automaticamente a cada nova transação realizada.

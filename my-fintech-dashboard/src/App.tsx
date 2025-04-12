@@ -1,51 +1,37 @@
 // Imports
-import {BrowserRouter as Router, Routes, Route, Link} from "react-router-dom";
-import {Typography} from "@mui/material";
+import {BrowserRouter as Router, Routes, Route, Navigate} from "react-router-dom";
+import {Grid} from "@mui/material";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import {AuthProvider} from "./contexts/AuthContext";
+import PrivateRoute from "./contexts/PrivateRoute";
+import Dashboard from "./pages/Dashboard";
 
 // Base Page
 function App() {
     return (
-        <Router>
-            <nav>
-                <Link to={"/"}>Home</Link> | <Link to={"/page2"}>Página 2</Link>
-            </nav>
-            <Routes>
-                <Route
-                    path="/"
-                    element={
-                        <>
-                            <Typography>Home</Typography>
-                        </>
-                    }
-                />
-                <Route
-                    path="/page2"
-                    element={
-                        <>
-                            <Typography>página 2</Typography>
-                        </>
-                    }
-                />
-            </Routes>
-        </Router>
+        <AuthProvider>
+            <Grid container minWidth={"100%"} padding={3}>
+                <Router>
+                    <Routes>
+                        {/* Rotas públicas */}
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
+                        {/* Rotas privadas */}
+                        <Route path="/" element={<Navigate to={"/dashboard"} />} />
+                        <Route
+                            path="/dashboard"
+                            element={
+                                <PrivateRoute>
+                                    <Dashboard />
+                                </PrivateRoute>
+                            }
+                        />
+                    </Routes>
+                </Router>
+            </Grid>
+        </AuthProvider>
     );
 }
 
 export default App;
-
-/* <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div> */

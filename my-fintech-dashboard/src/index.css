@@ -1,13 +1,31 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Definição das variáveis de cores */
+:root {
+    --color-primary: #82ab97; /* Verde mais claro para plano de fundo */
+    --color-secondary: #fcfcfc; /* Branco levemente acinzentado para fontes no fundo verde ou para plano de fundo de cards */
+    --color-tertiary: #699b83; /* Verde levemente mais escuro para botões */
+    --color-quaternary: #dfd8ce; /* Tom pastel para card-headers */
+    --color-quinquennial: #d9d9d9; /* Cinza levemente escuro para background de textfields */
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    background-color: var(--color-primary);
+    color: var(--color-secondary);
+}
+
+.card {
+    background-color: var(--color-secondary);
+    color: black;
+}
+
+.card-header {
+    background-color: var(--color-quinquennial);
+    color: black;
+    text-align: center;
+}
+
+.button {
+    background-color: var(--color-tertiary);
+    color: var(--color-secondary);
+    border-radius: 50%;
 }

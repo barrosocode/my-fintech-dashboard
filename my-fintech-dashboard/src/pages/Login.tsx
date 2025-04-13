@@ -1,39 +1,37 @@
-// Imports
 import {Grid, TextField, Typography} from "@mui/material";
 import StyledCard from "../components/styled-card";
 import StyledButton from "../components/button";
 import {Link, useNavigate} from "react-router-dom";
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import {login} from "../services/auth";
+import {useAuth} from "../contexts/AuthContext"; // Importa o contexto de autenticação
 
-// Component
 const Login = () => {
-    // Variáveis do formulário
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
-    // Variável de navegação
     const navigate = useNavigate();
+    const {isAuthenticated, login: contextLogin} = useAuth(); // Obtém a função de login e a autenticação do contexto
 
-    // Função de login
+    // Se o usuário já estiver autenticado, redireciona para o dashboard
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate("/dashboard");
+        }
+    }, [isAuthenticated, navigate]);
+
     const handleSubmit = async () => {
-        const params = {
-            email,
-            password,
-        };
+        const params = {email, password};
 
         try {
             const response = await login(params);
+            contextLogin(response.token, response.user); // Faz login com o token e o usuário
 
-            localStorage.setItem("token", response.token);
-            localStorage.setItem("user", response.user);
-
-            navigate("/");
+            navigate("/"); // Redireciona para o dashboard após o login
         } catch (error) {
             console.log(error);
         }
     };
 
-    // Conteúdo da página
     return (
         <Grid container minWidth={"100%"} minHeight={"100vh"} justifyContent={"center"} alignContent={"center"}>
             <Grid size={{xl: 2.5, lg: 3.5, md: 4.5, sm: 6, xs: 10}}>
@@ -46,25 +44,11 @@ const Login = () => {
                             </Grid>
                             <Grid size={12} padding={2}>
                                 <Typography>Email</Typography>
-                                <TextField
-                                    value={email}
-                                    onChange={(e) => {
-                                        setEmail(e.target.value);
-                                    }}
-                                    fullWidth
-                                    type="email"
-                                />
+                                <TextField value={email} onChange={(e) => setEmail(e.target.value)} fullWidth type="email" />
                             </Grid>
                             <Grid size={12} padding={2}>
                                 <Typography>Senha</Typography>
-                                <TextField
-                                    value={password}
-                                    onChange={(e) => {
-                                        setPassword(e.target.value);
-                                    }}
-                                    fullWidth
-                                    type="password"
-                                />
+                                <TextField value={password} onChange={(e) => setPassword(e.target.value)} fullWidth type="password" />
                             </Grid>
                             <Grid size={10} padding={2}>
                                 <StyledButton onClick={handleSubmit} text={"Entrar"} />
@@ -83,5 +67,4 @@ const Login = () => {
     );
 };
 
-// Export
 export default Login;

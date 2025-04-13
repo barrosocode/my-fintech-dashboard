@@ -1,53 +1,82 @@
-// Imports
-import {Grid, MenuItem, Select, Table, TableCell, TableHead, TableRow, TextField, Typography} from "@mui/material";
+import {Grid, MenuItem, Select, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography} from "@mui/material";
 import StyledButton from "../components/button";
 import StyledCard from "../components/styled-card";
-import {Transaction, TransactionTypes} from "../types";
+import {Balance, Transaction, TransactionTypes, User} from "../types";
 import {useEffect, useState} from "react";
 import {DatePicker} from "@mui/x-date-pickers";
 import dayjs, {Dayjs} from "dayjs";
-import {readTransactions} from "../services/transactions";
+import {createTransaction, readTransactions} from "../services/transactions";
+import {readBalance} from "../services/balance";
+import {useNavigate} from "react-router-dom";
+import {useAuth} from "../contexts/AuthContext"; // Importa o contexto de autenticação
+import {me} from "../services/auth";
 
-// Component
 const Dashboard = () => {
-    // Variáveis - cadastro de transação type, value, description, date
     const [type, setType] = useState<TransactionTypes>("entrada");
     const [value, setValue] = useState<number | string>(0);
     const [description, setDescription] = useState<string>("");
     const [date, setDate] = useState<Dayjs | null>(dayjs());
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-    // Requisição para listar as transações
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [balance, setBalance] = useState<Balance>();
+    const [user, setUser] = useState<User>();
+
+    const navigate = useNavigate();
+    const {logout} = useAuth(); // Obtém a função de logout do contexto
+
     useEffect(() => {
         const fetchTransactions = async () => {
             try {
                 const response = await readTransactions();
-                setTransactions(response);
+                setTransactions(response.data);
             } catch (error) {
                 console.error("Erro ao buscar transações:", error);
             }
         };
 
+        const fetchBalance = async () => {
+            try {
+                const response = await readBalance();
+                setBalance(response.data);
+            } catch (error) {
+                console.error("Erro ao buscar saldo:", error);
+            }
+        };
+
+        const findUser = async () => {
+            const response = await me();
+            setUser(response);
+        };
+
+        fetchBalance();
         fetchTransactions();
+        findUser();
     }, []);
 
-    console.log(transactions);
-
-    // Função de logout
-    const handleLogout = () => {
-        console.log("logout");
-    };
-
-    // Função Cadastrar Transação
     const handleSubmit = () => {
         const params = {
             type,
-            value,
+            value: Number(value),
             description,
-            date,
+            date: dayjs(date).format("YYYY-MM-DD"),
         };
 
-        console.log(params);
+        try {
+            createTransaction(params);
+            setType("entrada");
+            setValue("0");
+            setDescription("");
+            setDate(dayjs());
+
+            navigate("/");
+        } catch (error) {
+            alert(`Deu ruim: ${error}`);
+        }
+    };
+
+    const handleLogout = () => {
+        logout(); // Chama o logout do contexto
+        navigate("/login");
     };
 
     return (
@@ -57,8 +86,8 @@ const Dashboard = () => {
                     <Grid size={8} textAlign={"center"} padding={2} justifyContent={"center"}>
                         <Grid container justifyContent={"center"} spacing={2}>
                             <Grid size={12}>
-                                <Typography variant="h2">Olá, fulano!</Typography>
-                                <Typography variant="h4">Seja bem vindo ao My Fintech</Typography>
+                                <Typography variant="h2">Olá, {user?.name}!</Typography>
+                                <Typography variant="h4">Seja bem-vindo ao My Fintech</Typography>
                             </Grid>
                             <Grid size={4}>
                                 <StyledButton text="Sair" onClick={handleLogout} />
@@ -67,7 +96,7 @@ const Dashboard = () => {
                     </Grid>
                     <Grid size={4} textAlign={"center"} padding={2}>
                         <Typography variant="h4">Seu saldo é de:</Typography>
-                        <Typography variant="h3">9.999,99</Typography>
+                        <Typography variant="h3">{balance?.amount}</Typography>
                     </Grid>
                 </Grid>
                 <Grid container minWidth={"100%"} justifyContent={"center"} padding={2} spacing={2}>
@@ -89,6 +118,21 @@ const Dashboard = () => {
                                             </TableCell>
                                         </TableRow>
                                     </TableHead>
+                                    <TableBody>
+                                        {transactions.map((transaction, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell>
+                                                    <Typography>{transaction.value}</Typography>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Typography>{transaction.description}</Typography>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Typography>{transaction.date}</Typography>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
                                 </Table>
                             }
                         />
@@ -101,49 +145,22 @@ const Dashboard = () => {
                                     <Grid container padding={1} spacing={2} justifyContent={"center"}>
                                         <Grid size={12}>
                                             <Typography>Tipo</Typography>
-                                            <Select
-                                                value={type}
-                                                onChange={(e) => {
-                                                    setType(e.target.value as TransactionTypes);
-                                                }}
-                                                fullWidth
-                                            >
+                                            <Select value={type} onChange={(e) => setType(e.target.value as TransactionTypes)} fullWidth>
                                                 <MenuItem value="entrada">Entrada</MenuItem>
                                                 <MenuItem value="saida">Saída</MenuItem>
                                             </Select>
                                         </Grid>
                                         <Grid size={12}>
                                             <Typography>Valor</Typography>
-                                            <TextField
-                                                value={value}
-                                                onChange={(e) => {
-                                                    setValue(e.target.value);
-                                                }}
-                                                fullWidth
-                                            />
+                                            <TextField value={value} onChange={(e) => setValue(e.target.value)} fullWidth />
                                         </Grid>
                                         <Grid size={12}>
                                             <Typography>Data</Typography>
-                                            <DatePicker
-                                                sx={{width: "100%"}}
-                                                value={date}
-                                                format="DD/MM/YYYY"
-                                                onChange={(newDate) => {
-                                                    setDate(newDate);
-                                                }}
-                                            />
+                                            <DatePicker sx={{width: "100%"}} value={date} format="DD/MM/YYYY" onChange={(newDate) => setDate(newDate)} />
                                         </Grid>
                                         <Grid size={12}>
                                             <Typography>Descrição</Typography>
-                                            <TextField
-                                                value={description}
-                                                onChange={(e) => {
-                                                    setDescription(e.target.value);
-                                                }}
-                                                multiline
-                                                rows={3}
-                                                fullWidth
-                                            />
+                                            <TextField value={description} onChange={(e) => setDescription(e.target.value)} multiline rows={3} fullWidth />
                                         </Grid>
                                         <Grid size={12}>
                                             <StyledButton text="Cadastrar" onClick={handleSubmit} />
@@ -159,5 +176,4 @@ const Dashboard = () => {
     );
 };
 
-// Export
 export default Dashboard;

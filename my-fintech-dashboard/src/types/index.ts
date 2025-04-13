@@ -1,3 +1,9 @@
+export interface User {
+    id?: string | number;
+    name: string;
+    email: string;
+}
+
 export type TransactionTypes = "entrada" | "saida";
 
 export interface Transaction {
@@ -17,4 +23,8 @@ export interface RegisterData {
     email: string;
     password: string;
     password_confirmation: string;
+}
+
+export interface Balance {
+    amount: number;
 }

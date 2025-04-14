@@ -2,33 +2,48 @@ import {Grid, TextField, Typography} from "@mui/material";
 import StyledCard from "../components/styled-card";
 import StyledButton from "../components/button";
 import {Link, useNavigate} from "react-router-dom";
-import {useState, useEffect} from "react";
+import {useState} from "react";
 import {login} from "../services/auth";
-import {useAuth} from "../contexts/AuthContext"; // Importa o contexto de autenticação
+import {useAuth} from "../contexts/AuthContext";
+import Swal from "sweetalert2";
+
+interface ValidationError {
+    email?: string[];
+    password?: string[];
+}
 
 const Login = () => {
+    // Variáveis da requisição
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
+    // Variável de navegação
     const navigate = useNavigate();
-    const {isAuthenticated, login: contextLogin} = useAuth(); // Obtém a função de login e a autenticação do contexto
-
-    // Se o usuário já estiver autenticado, redireciona para o dashboard
-    useEffect(() => {
-        if (isAuthenticated) {
-            navigate("/dashboard");
-        }
-    }, [isAuthenticated, navigate]);
+    // Realização do login
+    const {login: contextLogin} = useAuth();
+    // Validação de erros
+    const [errors, setErrors] = useState<ValidationError>({});
 
     const handleSubmit = async () => {
+        setErrors({});
         const params = {email, password};
 
         try {
             const response = await login(params);
-            contextLogin(response.token, response.user); // Faz login com o token e o usuário
+            contextLogin(response.token, response.user);
 
-            navigate("/"); // Redireciona para o dashboard após o login
-        } catch (error) {
-            console.log(error);
+            navigate("/");
+        } catch (error: any) {
+            if (error.response && error.response.data) {
+                const data = error.response.data;
+
+                if (error.response.data.errors) {
+                    setErrors(data.errors);
+                } else {
+                    Swal.fire("Erro", data.message, "error");
+                }
+            } else {
+                Swal.fire("Erro", "Desculpe, ocorreu um erro desconhecido", "error");
+            }
         }
     };
 
@@ -44,11 +59,11 @@ const Login = () => {
                             </Grid>
                             <Grid size={12} padding={2}>
                                 <Typography>Email</Typography>
-                                <TextField value={email} onChange={(e) => setEmail(e.target.value)} fullWidth type="email" />
+                                <TextField value={email} onChange={(e) => setEmail(e.target.value)} fullWidth type="email" error={!!errors.email} helperText={errors.email} />
                             </Grid>
                             <Grid size={12} padding={2}>
                                 <Typography>Senha</Typography>
-                                <TextField value={password} onChange={(e) => setPassword(e.target.value)} fullWidth type="password" />
+                                <TextField value={password} onChange={(e) => setPassword(e.target.value)} fullWidth type="password" error={!!errors.password} helperText={errors.password} />
                             </Grid>
                             <Grid size={10} padding={2}>
                                 <StyledButton onClick={handleSubmit} text={"Entrar"} />

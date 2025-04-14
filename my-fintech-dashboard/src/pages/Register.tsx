@@ -2,13 +2,63 @@
 import {Grid, TextField, Typography} from "@mui/material";
 import StyledCard from "../components/styled-card";
 import StyledButton from "../components/button";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
+import {useState} from "react";
+import {register} from "../services/auth";
+import Swal from "sweetalert2";
+
+interface ValidationError {
+    name?: string[];
+    email?: string[];
+    password?: string[];
+}
 
 // Component
 const Register = () => {
+    // Variáveis da requisição
+    const [name, setName] = useState<string>("");
+    const [email, setEmail] = useState<string>("");
+    const [password, setPassword] = useState<string>("");
+    const [passwordConfirmation, setPasswordConfirmation] = useState<string>("");
+    // Validação de erros
+    const [errors, setErrors] = useState<ValidationError>({});
+    // Variável de navegação
+    const navigate = useNavigate();
+
+    // Requisição Cadastrar usuário
+    const handleSubmit = async () => {
+        setErrors({});
+
+        const params = {
+            name,
+            email,
+            password,
+            password_confirmation: passwordConfirmation,
+        };
+
+        try {
+            const response = await register(params);
+            Swal.fire("Sucesso", `Usuário ${response.user.name} cadastrado com sucesso`, "success").then(() => {
+                navigate("/");
+            });
+        } catch (error: any) {
+            if (error.response && error.response.data) {
+                const data = error.response.data;
+                if (data.errors) {
+                    setErrors(data.errors);
+                } else {
+                    Swal.fire("Erro", data.message, "error");
+                }
+            } else {
+                Swal.fire("Erro", "Desculpe, ocorreu um erro desconhecido", "error");
+            }
+            console.log(error);
+        }
+    };
+
     return (
         <Grid container minWidth={"100%"} minHeight={"100vh"} justifyContent={"center"} alignContent={"center"}>
-            <Grid size={{lg: 3}}>
+            <Grid size={{xl: 2.5, lg: 3.5, md: 4.5, sm: 6, xs: 10}}>
                 <StyledCard
                     cardTitle="Bem-vindo ao My Fintech!"
                     content={
@@ -18,22 +68,57 @@ const Register = () => {
                             </Grid>
                             <Grid size={12} padding={2}>
                                 <Typography>Nome</Typography>
-                                <TextField fullWidth />
+                                <TextField
+                                    value={name}
+                                    onChange={(e) => {
+                                        setName(e.target.value);
+                                    }}
+                                    fullWidth
+                                    error={!!errors.name}
+                                    helperText={errors.name}
+                                />
                             </Grid>
                             <Grid size={12} padding={2}>
                                 <Typography>Email</Typography>
-                                <TextField fullWidth type="email" />
+                                <TextField
+                                    value={email}
+                                    onChange={(e) => {
+                                        setEmail(e.target.value);
+                                    }}
+                                    fullWidth
+                                    type="email"
+                                    error={!!errors.email}
+                                    helperText={errors.email}
+                                />
                             </Grid>
                             <Grid size={12} padding={2}>
                                 <Typography>Senha</Typography>
-                                <TextField fullWidth type="password" />
+                                <TextField
+                                    value={password}
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+                                    }}
+                                    fullWidth
+                                    type="password"
+                                    error={!!errors.password}
+                                    helperText={errors.password}
+                                />
                             </Grid>
                             <Grid size={12} padding={2}>
                                 <Typography>Confirmar senha</Typography>
-                                <TextField fullWidth type="password" />
+                                <TextField
+                                    value={passwordConfirmation}
+                                    onChange={(e) => {
+                                        setPasswordConfirmation(e.target.value);
+                                    }}
+                                    fullWidth
+                                    type="password"
+                                    error={!!errors.password}
+                                    helperText={errors.password}
+                                />
                             </Grid>
                             <Grid size={10} padding={2}>
-                                <StyledButton text={"Cadastrar"} />
+                                <StyledButton onClick={handleSubmit} text={"Cadastrar"} />
                             </Grid>
                             <Grid size={12} padding={2}>
                                 <Typography fontSize={14}>Já é cadastrado?</Typography>

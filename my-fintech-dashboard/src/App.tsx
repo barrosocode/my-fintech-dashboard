@@ -6,17 +6,32 @@ import Register from "./pages/Register";
 import {AuthProvider} from "./contexts/AuthContext";
 import PrivateRoute from "./contexts/PrivateRoute";
 import Dashboard from "./pages/Dashboard";
+import PublicRoute from "./contexts/PublicRoute";
 
 // Base Page
 function App() {
     return (
         <AuthProvider>
-            <Grid container minWidth={"100%"} padding={3}>
+            <Grid container minWidth={"100%"}>
                 <Router>
                     <Routes>
                         {/* Rotas públicas */}
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={<Register />} />
+                        <Route
+                            path="/login"
+                            element={
+                                <PublicRoute>
+                                    <Login />
+                                </PublicRoute>
+                            }
+                        />
+                        <Route
+                            path="/register"
+                            element={
+                                <PublicRoute>
+                                    <Register />
+                                </PublicRoute>
+                            }
+                        />
                         {/* Rotas privadas */}
                         <Route path="/" element={<Navigate to={"/dashboard"} />} />
                         <Route

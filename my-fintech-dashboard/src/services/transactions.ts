@@ -1,6 +1,6 @@
 // Imports
 import api from "./api";
-import {Transaction} from "../types";
+import {readTransactionFilter, Transaction} from "../types";
 
 /**
  * Transactions functions
@@ -14,8 +14,8 @@ export const createTransaction = async (params: Transaction) => {
 };
 
 // Read (GET)
-export const readTransactions = async () => {
-    const response = await api.get("transactions");
+export const readTransactions = async (filter: readTransactionFilter) => {
+    const response = await api.get(`/transactions?start_date=${filter.start_date}&end_date=${filter.end_date}`);
 
     return response.data;
 };

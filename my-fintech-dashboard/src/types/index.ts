@@ -28,3 +28,8 @@ export interface RegisterData {
 export interface Balance {
     amount: number;
 }
+
+export interface readTransactionFilter {
+    start_date: string;
+    end_date: string;
+}
